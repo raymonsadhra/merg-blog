@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import configDotenv from 'dotenv';
 
-configDotenv.config();
+dotenv.config(); 
 
 mongoose.connect(process.env.MONGO).then( () => { console.log('MongoDb is connected') }, )
 
