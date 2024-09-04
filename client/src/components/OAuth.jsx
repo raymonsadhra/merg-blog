@@ -4,7 +4,7 @@ import { AiFillGoogleCircle } from 'react-icons/ai';
 import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
 import  { signInSuccess } from '../redux/user/userSlice';
-import { useNavigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function OAuth() {
     const auth = getAuth(app) 
