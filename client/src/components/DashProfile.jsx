@@ -1,9 +1,11 @@
  import React, { useRef } from 'react'
  import {useSelector} from 'react-redux'
- import { getDownloadURL, getStorage, uploadBytesResumable } from 'firebase/storage';
- import {app} '../firebase';
+ import { getDownloadURL, getStorage, updateMetadata, uploadBytesResumable } from 'firebase/storage';
+ import {app} from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { updateStart, updateSuccess, updateFailure } from '../redux/user/userSlice';
+import { useDispatch } from 'react-redux';
  
  export default function DashProfile() {
     const {currentUser} = useSelector(state=>state.user)
@@ -12,6 +14,10 @@ import 'react-circular-progressbar/dist/styles.css';
     const filePickerRef = useRef();
     const [imageFileUploadProgress, setImageFileUploadProgresss] = useState(0);
     const [imageFileUploadError, setImageFileUploadError] = useState(null);
+    const [updateUserSuccesss, setUpdateUserSuccess] = useState(null);
+    const [updateUserError, setUpdateUserError] = useState(null);
+    const [formData, setFromData] = useState({});
+    const dispatch = useDispatch();
     const handleImageChange = (e) => {
       const file=e.target.files[0];
       if(file){
@@ -39,13 +45,55 @@ import 'react-circular-progressbar/dist/styles.css';
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL))=>{
           setImageFileUrl(downloadURL);
+          setFormData({...formData, profilePicture: downloadURL}); 
         }
       }
-    
+   const handleChange = (e) => {
+    setFormData({...formData, [e.target.id]: e.target.value});
+  
+   const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUpdateUserError(null);
+    setUpdateUserSuccess(null);
+    if(Object.keys(form.data).length === 0){
+      setUpdateUserError("No changes made");
+      return;
+    if(imageFielUploading){
+      setUpdateUserError("Please wait for the image to upload");
+    }
+
+    }
+    try {
+      dispatch(updateStart());
+      const respone = await fetch(`/api/user/update/${currentUser._id}`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application-json',
+
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if(!res.ok){
+        dispatch(updateFailure(data.message));
+        setUpdateUserError("User's profile has been updated");
+      }
+      else{
+        dispatch(updateSuccess(data));
+        setUpdateUserSuccess("Sucessfully updated");
+
+      }
+    } catch (error) {
+      dispatch(updateFailure(error.message));
+      setUpdateUserError(error.message);
+      
+    }
+   }
+   }
    return (
     <div className='max-w-lg mx-auto p-3 w-full'>
       <h1 className='my-7 text-center font-semibold text-3xl'>Profile</h1>
-      <form className='flex flex-col gap-4'>
+      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
         <input type="file" accept='image/*' onChange={handleImageChange} ref={filePickerRef} hidden/>
       
         <div className="relativew-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full" onClick={()=> filePickerRef.current.click()}>
@@ -70,9 +118,9 @@ import 'react-circular-progressbar/dist/styles.css';
         </div>
         {imageFileUploadError && <Alert color='failure'>{imageFileUploadError}</Alert>}
           
-        <TextInput type='text' id='username' placeholder='username' defaultValue={currentUser.username}/>
-        <TextInput type='email' id='email' placeholder='email' defaultValue={currentUser.email}/>
-        <TextInput type='password' id='password' placeholder='password' />
+        <TextInput type='text' id='username' placeholder='username' defaultValue={currentUser.username} onChange={handleChange}/>
+        <TextInput type='email' id='email' placeholder='email' defaultValue={currentUser.email} onChange={handleChange}/>
+        <TextInput type='password' id='password' placeholder='password' onChange={handleChange} />
         <Button type='submit' gradientDuoTone='purpleToBlue' outline>
             Update
         </Button>
@@ -81,6 +129,16 @@ import 'react-circular-progressbar/dist/styles.css';
         <span className='cursor-pointer'>Delete Account</span>
         <span className='cursor-pointer'>Sign Out</span>
       </div>
+      {updateUserSuccesss && (
+        <Alert color='success' className='mt-5'>
+          {updateUserSuccesss}
+        </Alert>
+      )}
+      {updateUserError &&(
+        <Alert color ='failure' className='mt-5'>
+          {updateUserError}
+        </Alert>
+      )}
     </div>
    )
  }
