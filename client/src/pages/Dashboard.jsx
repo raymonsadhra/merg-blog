@@ -23,6 +23,8 @@ export default function Dashboard(){
             </div>
             {/*profile*/}
             {tab==='profile' && <DashProfile />}
+            {/*posts... */}
+            {tab==='posts' && DashPosts}
 
         </div>
     )
