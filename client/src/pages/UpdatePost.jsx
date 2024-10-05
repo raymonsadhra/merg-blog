@@ -6,16 +6,39 @@ import {getStorage, uploadBytesResumable} from 'firebase/storage';
 import { app } from '../firebase';
 import {CircularProgressbar} from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
+import {currentUser} = useSelector((state)=>state.user);
 
 
-
-export default function CreatePost() {
+export default function UpdatePost() {
   const [file,setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError]=useState(null);
   const [formData, setFormData]=useState({});
   const [publishError, setPublishError] = useState(null); 
+  const {postId}=useParams();
+  
+  const navigate = useNavigate();
+  useEffect(()=>
+    try {
+        const fetchPost = async()=>{
+        const data =await res.json();
+        if(!res.ok){
+            console.log(data.message);
+            setPublishError(data.message)
+            return;
+        }
+        if(res.ok){
+            setFormData(data.posts[0]);
+        }
+        const res =await fetch(`/api/post/getposts?postId=${postId}`);
+        }
+        fetchPost();
+    } catch (error) {
+        console.log(error.message);
+    }
+    ),[postId]);
+
    const handleUploadImage=async()=>{
     try {
       if(!file){
@@ -55,8 +78,8 @@ export default function CreatePost() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     try {
-      const res = await fetch('api/post/create',{
-        method: 'POST',
+      const res = await fetch(`api/post/updatepost/${formData._id}/${currentUser._id}`,{
+        method: 'PUT',
         headers:{
           'Content-Type': 'application/json',
         },
@@ -81,18 +104,20 @@ export default function CreatePost() {
   }
   return (
     <div className = 'p-3 max-w-3xl mx-auto min-h-screen'>
-      <h1 className='text-center text-3xl my-7 font-semibold'>Create a post</h1>
+      <h1 className='text-center text-3xl my-7 font-semibold'>Update post</h1>
       <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
         <div className = "flex flex-col gap-4 sm:flex-row justify-between">
           <TextInput type="text" placeHolder='Title' required id = 'title' className='flex-1'
           onChange={(e)=>
             setFormData({...formData,title:e.target.value})
           }
+          value={formData.title}
           />
           <Select>
             onChange={(e)=>
               setFormData({...formData,category:e.target.value})
           }
+          value={formData.category}
             <option value="uncategorized">Select a categroy</option>
             <option value="javascript">JavaScript</option>
             <option value="reactjs">React.js</option>
@@ -120,12 +145,12 @@ export default function CreatePost() {
           )}
         )}
         <ReactQuill theme="snow" placeholder='Write Something' className="h-72 mb-12" required
-          onChange={(value)=>
+          onChange value={formData.content}, ={(value)=>
             setFormData({...formData,content=value})
         }
         />
         <Button type='submit' gradientDuoTone='purpleToPink'>
-          Publish
+          Update post
         </Button>
         {
           {publishError && <Alert className='mt-5' color='failure'>{publishError}</Alert>}

@@ -28,6 +28,7 @@ export default function Main() {
       </Route> 
       <Route element={<OnlyAdminPrivateRoute/>} >
         <Route path="/create-post" element={<CreatePost />} />
+        <Route path="/update-post" element={<UpdatePost />} />
       </Route>       
 
 
