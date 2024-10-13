@@ -2,8 +2,11 @@ Full stack MERN (Mongo DB, Express, React, Node.js) project.
 Blog Site
 
 API Folder 
+
 Controller Folder:
+
 auth.controller.js: Handles authentication-related logic like login, registration, and user session management.
+
 comment.controller.js: Manages comment-related functionality, such as creating, deleting, and retrieving comments.
 post.controller.js: Manages post-related operations, including creating, updating, deleting, and retrieving blog posts.
 user.controller.js: Handles user-specific actions like profile updates, user management, and retrieving user data.
